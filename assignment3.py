@@ -7,15 +7,12 @@ Original file is located at
     https://colab.research.google.com/drive/18aUWx6dUZurF95lClsHwRVMiQBa1jIa5
 """
 
-# --- Imports ---
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import requests, gzip, io
-
-# --- Custom Dataset Loader ---
 class FashionMNISTIDX(Dataset):
     def __init__(self, image_url, label_url, transform=None):
         label_data = requests.get(label_url).content
@@ -38,8 +35,6 @@ class FashionMNISTIDX(Dataset):
         if self.transform:
             image = self.transform(image)
         return image, label
-
-# --- Improved Neural Network Model ---
 class AdvancedFashionNet(nn.Module):
     def __init__(self):
         super(AdvancedFashionNet, self).__init__()
@@ -59,8 +54,6 @@ class AdvancedFashionNet(nn.Module):
         x = F.relu(self.fc3(x))
         x = self.out(x)
         return F.log_softmax(x, dim=1)
-
-# --- Load Data ---
 train = FashionMNISTIDX(
     'https://github.com/zalandoresearch/fashion-mnist/raw/master/data/fashion/train-images-idx3-ubyte.gz',
     'https://github.com/zalandoresearch/fashion-mnist/raw/master/data/fashion/train-labels-idx1-ubyte.gz')
@@ -70,14 +63,11 @@ test = FashionMNISTIDX(
 
 train_loader = DataLoader(train, batch_size=64, shuffle=True)
 test_loader = DataLoader(test, batch_size=64, shuffle=False)
-
-# --- Model Training Setup ---
 model = AdvancedFashionNet()
 loss_fn = nn.NLLLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 epochs = 10
 
-# --- Training Loop ---
 def train_loop(dataloader, model, loss_fn, optimizer):
     model.train()
     for batch, (X, y) in enumerate(dataloader):
@@ -89,8 +79,6 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         optimizer.step()
         if batch % 100 == 0:
             print(f"Loss: {loss.item():>7f}  [{batch * len(X):>5d}/{len(dataloader.dataset):>5d}]")
-
-# --- Test Loop ---
 def test_loop(dataloader, model, loss_fn):
     model.eval()
     test_loss, correct = 0, 0
@@ -104,23 +92,17 @@ def test_loop(dataloader, model, loss_fn):
     accuracy = 100 * correct / len(dataloader.dataset)
     print(f"Test Accuracy: {accuracy:.2f}%, Avg Loss: {test_loss:.4f}")
     return accuracy
-
-# --- Run Training ---
 for epoch in range(epochs):
     print(f"\nEpoch {epoch+1}")
     train_loop(train_loader, model, loss_fn, optimizer)
     test_loop(test_loader, model, loss_fn)
-
-# --- Save Model ---
 torch.save({
     'epoch': epochs,
     'model_state_dict': model.state_dict(),
     'optimizer_state_dict': optimizer.state_dict()
 }, "model.pt")
 
-print("\n✅ Model saved as model.pt")
-
-# --- Reload & Evaluate Again (optional) ---
+print("\n Model saved as model.pt")
 print("\n📦 Loading model from disk and evaluating again...")
 loaded_model = AdvancedFashionNet()
 loaded_optimizer = torch.optim.Adam(loaded_model.parameters(), lr=0.001)
